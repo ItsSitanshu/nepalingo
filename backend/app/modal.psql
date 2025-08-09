@@ -1,0 +1,42 @@
+-- Enable UUID extension if needed
+CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
+
+-- Table users
+CREATE TABLE users (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    username VARCHAR(50) NOT NULL UNIQUE,
+    email VARCHAR(120) NOT NULL UNIQUE,
+    xp INTEGER NOT NULL DEFAULT 0
+);
+
+CREATE INDEX idx_users_id ON users(id);
+CREATE INDEX idx_users_username ON users(username);
+CREATE INDEX idx_users_email ON users(email);
+
+-- Table courses
+CREATE TABLE courses (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    language_name VARCHAR(80) NOT NULL,
+    description TEXT,
+    created_by UUID NULL,
+    CONSTRAINT fk_courses_created_by FOREIGN KEY (created_by) REFERENCES users(id) ON DELETE SET NULL
+);
+
+CREATE INDEX idx_courses_id ON courses(id);
+CREATE INDEX idx_courses_language_name ON courses(language_name);
+CREATE INDEX idx_courses_created_by ON courses(created_by);
+
+-- Table lessons
+CREATE TABLE lessons (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    course_id UUID NOT NULL,
+    title VARCHAR(120) NOT NULL,
+    type VARCHAR(30) NOT NULL,
+    order_index INTEGER NOT NULL DEFAULT 0,
+    xp_reward INTEGER NOT NULL DEFAULT 10,
+    CONSTRAINT fk_lessons_course FOREIGN KEY (course_id) REFERENCES courses(id) ON DELETE CASCADE,
+    CONSTRAINT uix_course_lesson_order UNIQUE (course_id, order_index)
+);
+
+CREATE INDEX idx_lessons_id ON lessons(id);
+CREATE INDEX idx_lessons_course_id ON lessons(course_id);
